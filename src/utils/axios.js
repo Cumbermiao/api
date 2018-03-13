@@ -1,7 +1,8 @@
 import axios from 'axios'
 
 const instance = axios.create({
-    baseURL:'/main-data/zsj'
+    // baseURL:'/data-open-web/do'
+    baseURL:'/do'
 })
 
 instance.defaults.headers = {

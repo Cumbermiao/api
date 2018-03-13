@@ -22,6 +22,6 @@ export default {
 }
 main{
   padding:20px;
-  
+  background: #f0f3f6;
 }
 </style>

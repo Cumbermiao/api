@@ -1,0 +1,28 @@
+1. 执行逻辑类型(label --> code) :  SQL --> SQL,Jar-->Jar,JavaScript-->JavaScirpt
+
+2. 数据类型（label-->code）： 字符串-->String,数字-->Number,布尔型-->Boolean,日期字符串-->DateStr,数字字符串-->NumberStr,字符串列表-->List<String>,数字列表-->List<Number>,
+布尔列表-->List<Boolean>,日期字符串列表-->List<DateStr>,  数字字符串列表-->List<NumberStr>
+
+3.{
+  "dataSourceWid": 2,
+  "sqlTemplate": "select * from T_DO_API t where t.WID > #{wid}"
+}
+
+unsolve:
+1. api分类中table 数据类型和逻辑类型过滤数据
+2. api新增没有desc
+3. api 删除接口
+
+4.whiteip edit filterChange
+
+EsopRegisterUrl
+
+{
+ "wid"：""
+ "configName":"WhiteIp",
+ "configType":"SingleApi",
+ "configItem":"json",
+ ""   
+}
+
+jsonstr : [{wid：0,name: "接口A"}]

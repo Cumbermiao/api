@@ -1,16 +1,27 @@
 <template>
   <div id="bar" class="clearfix">
       <ul class="clearfix">
-          <li>API配置</li>
-          <li>API调用日志</li>
-          <li>IP白名单</li>
-          <li>网管地址配置</li>
+          <li v-for="(item,index) in list" :key="index"  >
+            <keep-alive><router-link tag="div" :to="item.path" v-text="item.name"></router-link></keep-alive>
+          </li>
       </ul>
       <strong class="Medium">数据共享接口</strong>
   </div>
 </template>
 <script>
-export default {};
+import router from '@/router'
+export default {
+  data() {
+    return {
+      list: [
+        { name: "API配置", path: "/config" },
+        { name: "API调用日志", path: "/log" },
+        { name: "IP白名单", path: "/ip" },
+        { name: "网关地址配置", path: "/gateway" },
+      ]
+    };
+  },
+};
 </script>
 <style scoped lang='less'>
 #bar {
@@ -23,14 +34,17 @@ export default {};
   li {
     float: left;
     margin-left: 50px;
-    font-size:16px;
+    font-size: 16px;
     &:hover {
-      border-bottom: 2px solid #17D8C6 ;
-      color:#17D8C6 ;
-      font-family: Medium;
       cursor: pointer;
     }
+    &.active {
+      border-bottom: 2px solid #17d8c6;
+      color: #17d8c6;
+      font-family: Medium;
+    }
   }
+
   strong {
     font-size: 22px;
   }
