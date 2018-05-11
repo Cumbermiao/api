@@ -41,7 +41,6 @@ export default {
     &.active {
       border-bottom: 2px solid #17d8c6;
       color: #17d8c6;
-      font-family: Medium;
     }
   }
 

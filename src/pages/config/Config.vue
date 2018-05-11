@@ -2,18 +2,17 @@
   <div id="config">
       <section class="treeList">
           <div class="tree-search">
-              <el-input type="text" prefix-icon="el-icon-search" v-model.trim="keyapi" style="width:192px;" clearable placeholder='请输入接口分类'></el-input>
+              <el-input class="cus-input" type="text" prefix-icon="el-icon-search" v-model.trim="keyapi" style="width:192px;" clearable placeholder='请输入接口分类'></el-input>
               <img :src="add2" alt="新增" @click="addRootCata">
           </div>
-          <el-tree :data="tree" ref="tree" :default-expanded-keys="firstNode.id" node-key='id' :highlight-current='true' style="overflow:auto;height:calc(100vh - 200px)"  :filter-node-method="filterNode" :props="defaultProps" @node-click="nodeClick" :render-content='renderContent'>
-              
+          <el-tree accordion :data="tree" ref="tree" :default-expanded-keys="currentCataId?[currentCataId]:[]" node-key='id' :highlight-current='true' style="overflow:auto;height:calc(100vh - 200px)"  :filter-node-method="filterNode" :props="defaultProps" @node-click="nodeClick" :render-content='renderContent'>    
           </el-tree>
       </section><keep-alive><section>
-          <el-input type="text" style="width:360px;" prefix-icon="el-icon-search" clearable v-model.trim="keywords" placeholder='请输入搜索关键词' @change='searchApi'></el-input><el-button type='primary' style="margin-left:12px;" @click="searchApi">搜索</el-button>
-
+          <el-input class="cus-input" type="text" style="width:360px;" prefix-icon="el-icon-search" clearable v-model.trim="keywords" placeholder='请输入搜索关键词' @change='searchApi'></el-input><el-button type='primary' style="margin-left:12px;height:30px;line-height:30px;padding:0 15px" @click="searchApi">搜索</el-button>
+          <input type="text" id="copyInput">
           <el-row style="margin:20px 0">
               <el-button type='primary' @click="addApi">新增API</el-button><el-button type='default' @click="importFile" style="margin-left:12px;">
-            导入</el-button><a :href='`${href}${currentId}`'><el-button type='default' style="margin-left:12px;">导出</el-button></a>
+            导入</el-button><a :href='`${href}${currentId}`' ><el-button type='default' style="margin-left:12px;">导出</el-button></a>
           </el-row>
             
           <el-table :data='tableData' height='600' @filter-change='filterChange'>
@@ -22,7 +21,7 @@
                       <div class="table-operate">
                           <img :src="check" alt="查看" @click="checkApi(scope.row)">
                           <img :src="edit" alt="编辑" @click="editApi(scope.row)">
-                          <img :src="remove" alt="删除" @click="removeApi(scope.row.wid)">
+                          <img :src="remove" alt="删除" @click="removeApi(scope.row.wid)">  
                       </div>
                   </template>
               </el-table-column>
@@ -30,8 +29,10 @@
               <el-table-column label='名称' prop='intfName'></el-table-column>
               <el-table-column label='接口地址' prop='intfUrl'>
                 <template slot-scope="scope">
-                  <el-popover placement='top-start' width='400' trigger='hover' :content='scope.row.intfUrl'>
-                      <p slot="reference" class="popover-p" v-text="scope.row.intfUrl"></p>
+                  <el-popover placement='top-start' width='400' trigger='hover' >
+                      <p slot="reference" class="popover-p">{{scope.row.intfUrl}}</p>
+                      <p style="cursor:pointer;" @click="copy(scope.row.intfUrl)"> {{scope.row.intfUrl}}<br>
+                      <span style="color:#17d8c6">点击复制</span></p>
                   </el-popover>
                 </template>
               </el-table-column>
@@ -39,7 +40,7 @@
                 <template slot-scope="scope">
                   <span>{{scope.row.operateType=='Read'?'读取':'写入'}}</span>
                 </template>
-              </el-table-column><!-- :filter-method="dataTypeFilter"   :filter-method="logicTypeFilter"-->
+              </el-table-column>
               <el-table-column label='逻辑类型' prop='intfLogicType' :filters="logicTypeList" column-key='logicType' filter-placement='bottom' :filter-multiple='false' ></el-table-column>
               <el-table-column label='配置状态' prop='enable' width='140px'>
                 <template slot-scope="scope">
@@ -48,7 +49,9 @@
               </el-table-column>
               <el-table-column label='注册状态' >
                 <template slot-scope="scope">
-                    <p v-if="scope.row.status=='Registered'">已注册</p>
+                    <div v-if="scope.row.status=='Registered'">已注册
+                      <p style="color:#04A9F5;text-decoration:underline;cursor:pointer;" @click="unRegister(scope.row.wid)">去注销</p>
+                    </div>
                     <div v-else>未注册
                       <p><span style="color:#04A9F5;text-decoration:underline;cursor:pointer;" @click="register(scope.row.wid)">去注册</span></p>
                     </div>
@@ -56,7 +59,7 @@
               </el-table-column>
           </el-table>
           <div v-if="total>0" style="margin-top:22px">
-              <el-pagination background layout="prev, pager, next" :page-size='10' :total="total" @current-change='searchApi' :current-page.sync='pageNum'></el-pagination>
+              <el-pagination background layout="prev, pager, next" :page-size='10' :total="total" @current-change='numChange' :current-page='pageNum'></el-pagination>
           </div>
       </section></keep-alive>
     
@@ -199,7 +202,7 @@ export default {
       //逻辑类型
       logicTypeList: [
         { text: "SQL", value: "SQL" },
-        { text: "JavaScript", value: "JavaScript" },
+        { text: "JavaScript", value: "JavaScript" }
         // { text: "Jar", value: "Jar" }
       ],
       apiDialog: false,
@@ -211,18 +214,20 @@ export default {
       resultTable: null,
       firstNode: [], //默认点击第一个节点
       href: "/do/api/export?catalogWid=",
-      isParentAdd: false //新增根节点分类
+      isParentAdd: false, //新增根节点分类
+      timer: null,
+      light: null
     };
-  },
-  computed: {
-    //是否为根节点
-    //   flBread(){
-    //   }
   },
   watch: {
     keyapi(val) {
       this.$refs.tree.filter(val);
     }
+  },
+  computed: {
+    ...mapState({
+      currentCataId: state => state.config.currentCataId
+    })
   },
   methods: {
     ...mapActions([
@@ -236,14 +241,18 @@ export default {
       "REMOVE_API",
       "CHANGE_ENABLE",
       "REGISTER",
-      "IMPORT_API"
+      "IMPORT_API",
+      "UNREGISTER"
     ]),
     nodeClick(data, node) {
-      this.currentId = data.id;
-      this.$store.commit("SetCurrentCataId", data.id);
-      if (!data.children) {
-        this.searchApi();
-      }
+      this.currentId = data && data.id ? data.id : this.currentCataId;
+      if (this.light && node) this.light.classList.remove("is-current");
+      this.$store.commit("SetCurrentCataId", this.currentId);
+      this.searchApi();
+    },
+    numChange(val) {
+      this.pageNum = val;
+      this.searchApi();
     },
     searchApi() {
       let obj = {
@@ -256,7 +265,6 @@ export default {
       };
       this.FOR_API(obj).then(obj => {
         this.tableData = obj.dataSet;
-        this.pageNum = obj.pageInfo.pageNum;
         this.total = obj.pageInfo.total;
         this.tableData.forEach(item => {
           if (item.enable == "true") {
@@ -268,36 +276,40 @@ export default {
       });
     },
     renderContent(h, { node, data, store }) {
-      return h("div", { class: "tree-content" }, [
-        h("div", { class: "operate" }, [
-          h("i", {
-            class: "el-icon-circle-plus",
-            style: { fontSize: "12px", color: "#28b6f7" },
-            on: {
-              click: event => {
-                this.addCata(event, node, data);
+      return h(
+        "div",
+        { class: { "tree-content": true }, attrs: { id: data.id } },
+        [
+          h("div", { class: "operate" }, [
+            h("i", {
+              class: "el-icon-circle-plus",
+              style: { fontSize: "12px", color: "#28b6f7" },
+              on: {
+                click: event => {
+                  this.addCata(event, node, data);
+                }
               }
-            }
-          }),
-          h("img", {
-            attrs: { src: this.edit },
-            on: {
-              click: event => {
-                this.editCata(event, node, data);
+            }),
+            h("img", {
+              attrs: { src: this.edit },
+              on: {
+                click: event => {
+                  this.editCata(event, node, data);
+                }
               }
-            }
-          }),
-          h("img", {
-            attrs: { src: this.remove },
-            on: {
-              click: event => {
-                this.removeCata(event, node, data);
+            }),
+            h("img", {
+              attrs: { src: this.remove },
+              on: {
+                click: event => {
+                  this.removeCata(event, node, data);
+                }
               }
-            }
-          })
-        ]),
-        h("span", { style: { lineHeight: "42px" } }, node.label)
-      ]);
+            })
+          ]),
+          h("span", { style: { lineHeight: "42px" } }, node.label)
+        ]
+      );
     },
     filterNode(value, data) {
       return data.label.indexOf(value) !== -1;
@@ -305,19 +317,15 @@ export default {
     addCata(event, node, data) {
       this.isAddCata = true;
       this.showDialog = true;
+      this.currentId = data ? data.id : this.currentId;
       if (data) {
         this.$store.commit("SetCurrentCataId", data.id);
       }
       this.flBread = "";
       this.getBread(node);
       this.flBread = this.flBread.slice(0, -1);
-      if (event) event.stopPropagation();
     },
     addRootCata() {
-      // this.isAddCata = true;
-      // this.showDialog = true;
-      // this.$store.commit('SetCurrentCataId',0)
-      // this.currentId=0
       this.isParentAdd = true;
       this.addCata();
     },
@@ -333,6 +341,9 @@ export default {
       this.$store.commit("SetCurrentCataId", data.id);
       this.FOR_CATAGORY_DETAIL(data.id).then(obj => {
         this.isAddCata = false;
+        this.flBread = "";
+        this.getBread(node);
+        this.flBread = this.flBread.slice(0, -1);
         this.showDialog = true;
         this.catagory.name = obj.catalogName;
         this.catagory.desc = obj.catalogDesc;
@@ -340,26 +351,32 @@ export default {
         this.catagory.lastTime = obj.lastModifiedTime;
         this.catagory.lastAuthor = obj.lastModifiedOperator;
       });
-      event.stopPropagation();
     },
     removeCata(event, node, data) {
-      this.REMOVE_CATAGORY(data.id)
-        .then(() => {
-          this.getTree();
-          this.$notify({
-            iconClass: "gIcon iconfont icon-success bIcon",
-            type: "success",
-            title: "删除成功"
+      this.$confirm("", "确认删除此分类吗？").then(() => {
+        this.currentId = node.parent.data.id;
+        this.$store.commit("SetCurrentCataId", node.parent.data.id);
+        this.REMOVE_CATAGORY(data.id)
+          .then(() => {
+            this.getTree();
+            this.tableData = [];
+            this.$notify({
+              iconClass: "gIcon iconfont icon-success bIcon",
+              type: "success",
+              title: "删除成功"
+            });
+          })
+          .catch(msg => {
+            this.$notify({
+              iconClass: "yIcon el-icon-warning bIcon",
+              type: "warning",
+              title: msg ? msg : "删除失败!"
+            });
           });
-        })
-        .catch(msg => {
-          this.$notify({
-            iconClass: "yIcon el-icon-warning bIcon",
-            type: "warning",
-            title: msg ? msg : "删除失败!"
-          });
-        });
-      event.stopPropagation();
+        event.stopPropagation();
+      }).catch(()=>{
+
+      })
     },
     exportApi() {
       this.EXPORT_API(this.currentId + "").then(() => {});
@@ -456,7 +473,7 @@ export default {
 
         if (this.isAddCata) {
           this.ADD_CATAGORY(obj)
-            .then(() => {
+            .then(obj => {
               this.getTree();
               this.close();
               this.$notify({
@@ -465,11 +482,12 @@ export default {
                 iconClass: "gIcon iconfont icon-success bIcon"
               });
             })
-            .catch(() => {
+            .catch(msg => {
+              this.close();
               this.$notify({
                 iconClass: "yIcon el-icon-warning bIcon",
                 type: "warning",
-                title: "新增失败！"
+                title: msg ? msg : "新增失败！"
               });
             });
         } else {
@@ -484,6 +502,11 @@ export default {
             .then(() => {
               this.getTree();
               this.close();
+              this.$notify({
+                type: "success",
+                title: "修改成功",
+                iconClass: "gIcon iconfont icon-success bIcon"
+              });
             })
             .catch(msg => {
               let text = "修改失败！";
@@ -497,20 +520,30 @@ export default {
               }
             });
         }
+      } else {
+        this.$notify({
+          iconClass: "yIcon el-icon-warning bIcon",
+          type: "warning",
+          title: "请填写分类名！"
+        });
       }
     },
     getTree() {
+      this.close();
       this.FOR_TREE("Api").then(obj => {
-        this.tree = obj.children;
-        let _this = this;
-        let firstObj;
-        getFirstNode(obj, _this);
-        function getFirstNode(obj, _this) {
-          if (obj.children && obj.children.length) {
-            getFirstNode(obj.children[0], _this);
-            _this.firstNode.push(obj.id);
-          } else {
-            firstObj = obj;
+        // this.tree = obj
+        this.tree = obj.children ? obj.children : [];
+        if (this.tree && this.tree.length) {
+          let _this = this;
+          let firstObj;
+          getFirstNode(obj, _this);
+          function getFirstNode(obj, _this) {
+            if (obj.children && obj.children.length) {
+              getFirstNode(obj.children[0], _this);
+              _this.firstNode.push(obj.id);
+            } else {
+              firstObj = obj;
+            }
           }
         }
         // this.nodeClick(firstObj);
@@ -569,6 +602,26 @@ export default {
           });
         });
     },
+    unRegister(id) {
+      this.UNREGISTER([id])
+        .then(() => {
+          this.searchApi();
+          this.$notify({
+            iconClass: "gIcon iconfont icon-success bIcon",
+            type: "success",
+            title: "注销成功"
+          });
+        })
+        .catch(msg => {
+          let text = "注销失败";
+          if (msg) text = msg;
+          this.$notify({
+            iconClass: "yIcon el-icon-warning bIcon",
+            type: "warning",
+            title: text
+          });
+        });
+    },
     importFile() {
       if (this.currentId) {
         this.apiDialog = true;
@@ -578,6 +631,11 @@ export default {
     },
     upload() {
       let form = new FormData();
+      let size = this.$refs.files.files[0].size / 1024;
+      if (size > 10000) {
+        this.$confirm("文件不能超过10M！", { showCancelButton: false });
+        return;
+      }
       form.append("file", this.$refs.files.files[0]);
       this.UPLOAD_API({
         catalogWid: this.currentId,
@@ -598,6 +656,7 @@ export default {
           }
         })
         .catch(msg => {
+          this.$refs.files.value = "";
           if (msg) {
             this.$notify({
               iconClass: "yIcon el-icon-warning bIcon",
@@ -640,15 +699,40 @@ export default {
       if (this.$refs.files) {
         this.$refs.files.value = "";
       }
+      this.nodeClick();
+    },
+    copy(val){
+      console.log(val)
+      var input = document.getElementById('copyInput')
+      input.value = val
+      input.select()
+      document.execCommand("copy");
     }
   },
   created() {
     this.getTree();
   },
-  mounted() {}
+  mounted() {
+    if (this.currentCataId) {
+      this.$refs.tree.setCurrentNode(this.currentCataId);
+      let _this = this;
+      setTimeout(() => {
+        _this.light = document.getElementById(
+          _this.currentCataId
+        ).parentNode.parentNode;
+        _this.light.classList.add("is-current");
+        _this.nodeClick();
+      }, 500);
+    }
+  }
 };
 </script>
 <style>
+#copyInput{
+  width:1px;
+  height:0;
+  border:none;
+}
 #config section {
   min-height: calc(100vh - 100px);
   background: #fff;
@@ -660,22 +744,18 @@ export default {
   overflow: auto;
 }
 #config section:nth-child(2) {
-  width: calc(100vw - 305px);
+  width: calc(100vw - 315px);
   margin-left: 8px;
   padding: 20px;
 }
 #config .tree-search {
   padding: 20px 15px;
 }
-.tree-search .el-input__prefix .el-input__icon {
-  line-height: 30px;
-}
+
 #config img {
   cursor: pointer;
 }
-#config .tree-search input.el-input__inner {
-  height: 30px;
-}
+
 #config .tree-search img {
   margin-left: 2px;
   vertical-align: middle;
@@ -713,12 +793,11 @@ export default {
   height: 42px;
   width: 100%;
 }
+
 .el-tree-node {
   position: relative;
 }
-.el-tree-node.is-expanded > .el-tree-node__children {
-  display: inline;
-}
+
 #cataDialog label {
   line-height: 36px;
 }

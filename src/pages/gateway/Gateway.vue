@@ -1,7 +1,7 @@
 <template>
   <div id="gateWay">
     <el-row>
-        <el-col :span='3'><label class="required">API注册地址：</label></el-col>
+        <el-col :span='3'><label class="required">API网关地址：</label></el-col>
         <el-col :span='21'>
             <el-input style="width:418px;" type="text" v-model.trim="ApiRegisterUrls.value"  placeholder='API注册地址'></el-input>
         </el-col>
@@ -26,8 +26,8 @@
     </el-row>
     <div class="dialog-footer">
         <el-row>
-            <el-col :push='3' >
-                <el-button type='primary' @click="certain">保存</el-button>
+            <el-col :push='3' :span='21' >
+                <el-button type='primary' @click="certain" :disabled='isDisabled'>保存</el-button>
             </el-col>
         </el-row>
     </div>
@@ -57,7 +57,9 @@ export default {
         value: "",
         wid: "ServiceUrls",
         configWid: ""
-      }
+      },
+      timer: null,
+      isDisabled:false
     };
   },
   methods: {
@@ -117,25 +119,34 @@ export default {
           wid: this.ServiceUrls.configWid
         }
       ];
-      this.UPDATE_GATEWAY(param).then(() => {
-          this.searchList()
+      this.UPDATE_GATEWAY(param)
+        .then(() => {
+          this.searchList();
           this.$notify({
-              iconClass: "gIcon iconfont icon-success bIcon",
-              type: "success",
-              title: "修改成功！"
-            });
-      }).catch(()=>{
+            iconClass: "gIcon iconfont icon-success bIcon",
+            type: "success",
+            title: "修改成功！",
+            duration: 2000
+          });
+        })
+        .catch(() => {
           this.$notify({
-              iconClass: "gIcon el-icon-warning  bIcon",
-              type: "warning ",
-              title: '修改失败！'
-            });
-      });
+            iconClass: "gIcon el-icon-warning  bIcon",
+            type: "warning ",
+            title: "修改失败！",
+            duration: 2000
+          });
+        });
+        this.isDisabled=true
+        this.timer = setTimeout(()=>{
+          this.isDisabled = false
+          clearTimeout(this.timer)
+        },2000)
     },
     validate() {
       let text = "";
       if (!this.ApiRegisterUrls.value) {
-        text = "请填写API注册地址！";
+        text = "请填写API网关地址！";
       } else if (!this.AppName.value) {
         text = "请填写API服务名称！";
       } else if (!this.AppCode.value) {

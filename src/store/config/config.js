@@ -2,7 +2,7 @@ import {APP_ERROR} from '../mutations'
 import axios from '@/utils/axios'
 
 import {FOR_TREE,REMOVE_CATAGORY,ADD_CATAGORY,UPDATE_CATAGORY,FOR_CATAGORY_DETAIL,FOR_API,FOR_DATASOURCE,FOR_INOUT_PARAM,ADD_API,
-    UPLOAD_API,REMOVE_API,CHANGE_ENABLE,REGISTER,IMPORT_API,UPDATE_API,TEST_API} from '../api'
+    UPLOAD_API,REMOVE_API,CHANGE_ENABLE,REGISTER,IMPORT_API,UPDATE_API,TEST_API,UNREGISTER} from '../api'
 
 const state= {
     dataSourceList:null,//数据源列表
@@ -147,6 +147,17 @@ const actions = {
     //注册
     async [REGISTER]({commit},param){
         const {status, statusText, data} = await axios.post('/api/register',param)
+        return new Promise((resolve,reject)=>{
+            if(data.returnStatus == '1'){
+                resolve(data.dataSet)
+            }else{
+                reject(data.errorMsg)
+            }
+        })
+    },
+    //注销
+    async [UNREGISTER]({commit},param){
+        const {status, statusText, data} = await axios.post('/api/unRegister',param)
         return new Promise((resolve,reject)=>{
             if(data.returnStatus == '1'){
                 resolve(data.dataSet)

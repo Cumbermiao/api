@@ -2,7 +2,10 @@
   <div id="app">
     <nav-bar></nav-bar>
     <main>
-      <router-view/>
+      <keep-alive >
+        <router-view v-if="$route.meta.keepAlive"></router-view>
+      </keep-alive>
+      <router-view v-if="!$route.meta.keepAlive"></router-view>
     </main>
   </div>
 </template>
@@ -18,8 +21,7 @@ export default {
 </script>
 
 <style>
-#app {
-}
+
 main{
   padding:20px;
   background: #f0f3f6;

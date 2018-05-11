@@ -37,6 +37,9 @@ export const IMPORT_API = 'IMPORT_API'
 export const CHANGE_ENABLE = 'CHANGE_ENABLE'
 //api注册
 export const REGISTER = 'REGISTER'
+//注销
+export const UNREGISTER = 'UNREGISTER'
+
 
 
 //参数解析

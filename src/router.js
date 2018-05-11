@@ -8,15 +8,17 @@ import Log from '@/pages/log/Log'
 import IP from '@/pages/Ip/ip'
 import LogDetail from '@/pages/log/LogDetail'
 import Gateway from '@/pages/gateway/Gateway'
+import store from './store/store'
 Vue.use(Router)
 
-export default new Router({
+const router =  new Router({
     routes:[{
         path:'/',
-        redirect:'/config'
+        redirect:{name:'config'}
     },{
+        name:'config',
         path:'/config',
-        component:Config
+        component:Config,
     },{
         path:'/config/detail',
         component:ApiDetail
@@ -25,10 +27,14 @@ export default new Router({
         component:DetailCheck
     },{
         path:'/log',
-        component:Log
+        component:Log,
+        meta:{
+            keepAlive:true
+        }
     },{
         path:'/ip',
-        component:IP
+        component:IP,
+        
     },{
         path:'/log/detail',
         component:LogDetail
@@ -37,3 +43,14 @@ export default new Router({
         component:Gateway
     },]
 })
+
+// router.beforeEach((to, from, next)=>{
+//     console.log(to, from)
+//     if(to.path!='/log'||from.path!='/log/detail'){
+//         console.log('ss')
+//         store.dispatch('FOR_TREE', 'Api')
+//     }
+//     next()
+// })
+
+export default router

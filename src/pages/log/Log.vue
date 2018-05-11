@@ -1,10 +1,10 @@
 <template>
   <div id="log">
       <section class="treeList">
-          <el-tree :data="tree" :highlight-current='true' style="height:calc(100vh - 200px)" :props="defaultProps" @node-click="nodeClick">
+          <el-tree :data="tree"  ref="tree" :highlight-current='true' node-key='id' accordion style="height:calc(100vh - 200px)" :props="defaultProps" @node-click="nodeClick" :render-content='renderContent'>
           </el-tree>
       </section><section class="log-main">
-            <el-input type="text" style="width:256px;" prefix-icon="el-icon-search"  v-model="keywords" clearable @change="searchLog" placeholder='请输入中文名或者名称'>
+            <el-input type="text" class="cus-input" style="width:256px;" prefix-icon="el-icon-search"  v-model="keywords" clearable @change="searchLog" placeholder='请输入中文名或者名称'>
             </el-input>
             <el-date-picker style="vertical-align:bottom;margin-left:8px;" v-model="dateRange" @change='dateChange' type="daterange" value-format='yyyy-MM-dd' range-separator="至" start-placeholder="开始日期" end-placeholder="结束日期">
             </el-date-picker>
@@ -40,7 +40,7 @@
               </el-table-column>
           </el-table>
           <div style="margin-top:22px" v-if="total>0">
-              <el-pagination background layout="prev, pager, next" :current-page='pageNum' :page-size='10' :total="total"></el-pagination>
+              <el-pagination background layout="prev, pager, next" :current-page='pageNum' @current-change='numChange' :page-size='10' :total="total"></el-pagination>
           </div>
       </section>
   </div>
@@ -59,10 +59,10 @@ export default {
       dateRange: [],
       tableData: [],
       tree: null,
-      currentId: null,//当前分类id
+      currentId: null, //当前分类id
       pageNum: 1,
       pageSize: 10,
-      total:0,
+      total: 0,
       currentApiId: null,
       //数据操作类型
       operateTypeList: [
@@ -72,30 +72,40 @@ export default {
       //逻辑类型
       logicTypeList: [
         { text: "SQL", value: "SQL" },
-        { text: "JavaScript", value: "JavaScript" },
+        { text: "JavaScript", value: "JavaScript" }
         // { text: "Jar", value: "Jar" }
       ],
-      operateType:'All',
-      logicType:'All'
-
+      operateType: "All",
+      logicType: "All",
+      light:null,//高亮树节点
     };
   },
   computed: {
+    ...mapState({
+      currentLogId:state=>state.log.currentLogId
+    }),
     startTime() {
-      return this.dateRange[0] ? (this.dateRange[0]+' 00:00:00') : "";
+      return this.dateRange[0] ? this.dateRange[0] + " 00:00:00" : "";
     },
     endTime() {
-      return this.dateRange[1] ? (this.dateRange[1]+' 23:59:59'): "";
+      return this.dateRange[1] ? this.dateRange[1] + " 23:59:59" : "";
     }
   },
+  // watch:{
+  //   '$route'(to,from){
+  //     if(to.path!='/log'||from.path!='/log/detail'){
+  //       this.getTree()
+  //     }else{
+  //       console.log('tree',this.currentId)
+  //     }
+  //   }
+  // },
   methods: {
     ...mapActions(["FOR_TREE", "FOR_LOG_LIST"]),
     nodeClick(data, node) {
-      this.currentId = data.id;
-      this.$store.commit("SetCurrentCataId", data.id);
-      if (!data.children) {
-        this.searchLog();
-      }
+      this.currentId = data&&data.id?data.id:this.currentLogId;
+      this.$store.commit("SetCurrentLogId", this.currentId);
+      this.searchLog();
     },
     getTree() {
       this.FOR_TREE("Api").then(obj => {
@@ -129,15 +139,18 @@ export default {
           startTime: this.startTime,
           pageNum: this.pageNum,
           pageSize: this.pageSize,
-          logicType:this.logicType,
-          operateType:this.operateType
+          logicType: this.logicType,
+          operateType: this.operateType
         };
         this.FOR_LOG_LIST(obj).then(obj => {
           this.tableData = obj.dataSet;
-          this.total = obj.pageInfo.total-0
-          this.pageNum = obj.pageInfo.pageNum-0
+          this.total = obj.pageInfo.total - 0;
         });
       }
+    },
+    numChange(val){
+      this.pageNum = val
+      this.searchLog()
     },
     toDetail(status, obj) {
       this.$store.commit("setLogCurrentApi", obj);
@@ -146,7 +159,7 @@ export default {
         query: {
           status,
           apiId: obj.apiWid,
-          cataId:this.currentId,
+          cataId: this.currentId,
           keyword: this.keywords,
           startTime: this.startTime,
           endTime: this.endTime
@@ -154,12 +167,35 @@ export default {
       });
     },
     dateChange() {
-      this.searchLog()
-    }
+      this.searchLog();
+    },
+    renderContent(h, { node, data, store }) {
+      return h(
+        "div",
+        { class: { "tree-content": true }, attrs: { id: data.id } },
+        [
+          h("span", { style: { lineHeight: "42px" } }, node.label)
+        ]
+      );
+    },
   },
   created() {
     this.getTree();
+  },
+  mounted () {
+    // console.log(this.currentLogId)
+    // if (this.currentLogId) {
+    //   this.$refs.tree.setCurrentNode(this.currentLogId);
+    //   let _this = this;
+    //   setTimeout(() => {
+    //     _this.light = document.getElementById(_this.currentLogId)
+    //     console.log(_this.light)
+    //     _this.light.classList.add("is-current");
+    //     _this.nodeClick();
+    //   }, 1000);
+    // }
   }
+  
 };
 </script>
 <style lang="less">
@@ -177,7 +213,7 @@ export default {
     }
   }
   .log-main {
-    width: calc(~"100vw - 305px");
+    width: calc(~"100vw - 315px");
     margin-left: 8px;
     padding: 20px;
   }
@@ -191,5 +227,14 @@ export default {
   .bColor {
     color: #04a9f5;
   }
+  .cus-input {
+    .el-input__inner {
+        height: 36px;
+        line-height: 36px;
+    }
+    .el-input__prefix .el-input__icon {
+        line-height: 36px;
+    }
+}
 }
 </style>

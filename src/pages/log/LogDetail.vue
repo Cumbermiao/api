@@ -38,7 +38,7 @@
               </el-table-column> -->
           </el-table>
           <div style="margin-top:22px" v-if="total>0">
-              <el-pagination background layout="prev, pager, next" :current-page.sync='pageNum' :page-size='10' :total="total" @current-change='searchLogDetail'></el-pagination>
+              <el-pagination background layout="prev, pager, next" :current-page='pageNum' :page-size='10' :total="total" @current-change='searchLogDetail'></el-pagination>
           </div>
         </div>
   </div>
@@ -64,10 +64,10 @@ export default {
   },
   computed: {
     startTime() {
-      return this.dateRange[0] ? this.dateRange[0] + " 00:00:00" : null;
+      return this.dateRange&&this.dateRange[0] ? this.dateRange[0] + " 00:00:00" : null;
     },
     endTime() {
-      return this.dateRange[1] ? this.dateRange[1] + " 23:59:59" : null;
+      return this.dateRange&&this.dateRange[1] ? this.dateRange[1] + " 23:59:59" : null;
     }
   },
   methods: {

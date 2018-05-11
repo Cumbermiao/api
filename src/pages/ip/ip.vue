@@ -2,7 +2,7 @@
   <div id="ip">
       <el-row>
           <el-button class="add" type='default' @click="addIP">+新增IP白名单</el-button> 
-          <el-input style="width:485px;margin-left:8px;" type="text" prefix-icon="el-icon-search" clearable v-model.trim="keywords" @change="searchIP" placeholder='请输入控制对象、IP'></el-input>
+          <el-input class="cus-input" style="width:485px;margin-left:8px;" type="text" prefix-icon="el-icon-search" clearable v-model.trim="keywords" @change="searchIP" placeholder='请输入控制对象、IP'></el-input>
       </el-row>
       <el-row>
           <el-table :data='tableData' height='450' @filter-change='filterChange'>
@@ -34,7 +34,7 @@
           </el-table>
       </el-row>
       <div v-if="total>0" style="margin-top:22px">
-        <el-pagination background layout="prev, pager, next" :page-size='10' :total="total" @current-change='searchIP' :current-page.sync='pageNum'></el-pagination>
+        <el-pagination background layout="prev, pager, next" :page-size='10' :total="total" @current-change='numChange' :current-page='pageNum'></el-pagination>
       </div>
 
       <!-- dialog  v-if="ipDialog"-->
@@ -98,7 +98,7 @@ export default {
       ctrMap: null,
       currentIP: null,
       ip: "",
-      filterType: "", //表格类型过滤的值
+      filterType: "" //表格类型过滤的值
     };
   },
   watch: {
@@ -117,6 +117,10 @@ export default {
       "REMOVE_WHITE_IP",
       "UPDATE_WHITE_IP"
     ]),
+    numChange(val) {
+      this.pageNum = val;
+      this.searchIP();
+    },
     searchIP() {
       this.FOR_IP_LIST({
         configName: "WhiteIp",
@@ -126,10 +130,9 @@ export default {
         configType: this.filterType
       }).then(obj => {
         this.tableData = obj.dataSet;
-        this.tableData.forEach((item)=>{
-          item.configItem = JSON.parse(item.configItem)
-        })
-        this.pageNum = obj.pageInfo.pageNum;
+        this.tableData.forEach(item => {
+          item.configItem = JSON.parse(item.configItem);
+        });
         this.total = obj.pageInfo.total;
       });
     },
@@ -146,7 +149,7 @@ export default {
     },
     toEdit(obj) {
       this.currentIP = obj;
-      let controls =obj.configItem;
+      let controls = obj.configItem;
       this.type = obj.configType;
       this.ctrObj = [];
       controls.forEach(item => {
@@ -179,6 +182,12 @@ export default {
       this.closeDialog();
     },
     certain() {
+      if (!this.type || !this.ctrObj || !this.ip) {
+        this.message({
+          type: "warning",
+          message: "请填写必填项！"
+        });
+      }
       let param = [];
       let configItem = [];
       this.ctrObj.forEach(item => {
@@ -255,7 +264,7 @@ export default {
   }
 };
 </script>
-<style lang="less" scoped>
+<style lang="less">
 #ip {
   padding: 32px 18px;
   background: #fff;
@@ -276,6 +285,15 @@ export default {
   }
   label {
     line-height: 36px;
+  }
+  .cus-input {
+    .el-input__inner {
+      height: 36px;
+      line-height: 36px;
+    }
+    .el-input__prefix .el-input__icon {
+      line-height: 36px;
+    }
   }
 }
 </style>

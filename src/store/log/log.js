@@ -2,7 +2,8 @@ import {APP_ERROR} from '../mutations'
 import axios from '@/utils/axios'
 import {FOR_LOG_LIST,FOR_LOG_DETAIL} from '../api'
 const state = {
-    currentApi:null
+    currentApi:null,
+    currentLogId:null
 }
 
 const actions = {
@@ -33,6 +34,9 @@ const actions = {
 const mutations = {
     setLogCurrentApi(state,obj){
         state.currentApi = obj
+    },
+    SetCurrentLogId(state,id){
+        state.currentLogId = id
     }
 }
 export default {

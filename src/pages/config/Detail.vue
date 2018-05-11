@@ -55,7 +55,7 @@
               <el-col :span='3' ><label class="required">逻辑内容:</label></el-col>
               <!-- sql -->
               <el-col :span='12' v-if="logicType=='SQL'">
-                  <el-input type='textarea' :rows='8' v-model="sql"></el-input>
+                  <el-input type='textarea' :rows='10' v-model="sql"></el-input>
 
                   <el-row>
                       <el-button type="primary" @click="getInOutParam">参数解析</el-button>
@@ -64,16 +64,31 @@
               </el-col>
               <el-col :span='9' v-if="logicType=='SQL'">
                   <div class="remark">
-                      <big>逻辑内容填写说明:</big>
-                      <p>1.所有得表和子查询必须有别名；</p>
-                      <p>2.所有查询和条件中得字段必须带有别名</p>
-                      <p>参数格式:#{paramName}</p>
-                      <p>如：select * from t_ampa_useraction_today t</p>
+                      <big>SQL编写说明:</big>
+                      <p>(1)参数格式为#{参数名}，例子 #{wid}。</p>
+                      <p>(2)支持if条件,&lt;if test="条件表达式"&gt;sql子句&lt;/if&gt;,条件表达式中参数直接用参数名，如果if条件表达式为真,则最终sql包含子句否则不包含。</p>
+                      <p>例如 &lt;if test="wid !=null and wid !=''"&gt;and t.wid = #{wid}&lt;/if&gt; 。</p>
+                      <p>完整例子：<br> select * from t_test &lt;if test="wid != null"&gt;where wid = #{wid}&lt;/if&gt; 。</p>
                   </div>
               </el-col>
               <!-- JavaScript -->
               <el-col :span='12'  v-if="logicType=='JavaScript'">
-                  <el-input type='textarea' :rows='8' v-model="sql"></el-input>
+                  <el-input type='textarea' :rows='10' v-model="sql"></el-input>
+              </el-col>
+              <el-col :span='9' v-if="logicType=='JavaScript'">
+                  <div class="remark">
+                      <big>JavaScript编写说明:</big>
+                      <p>(1)JS上线文提供$doDBUtil数据库操作工具,可以读写数据源，支持的方法为： List&lt;Map&lt;String,Object&gt;&gt; queryList(String sql, Object... params) int update(String sql, Object... params) 。</p>
+                      <p>(2)JS上线文提供 $dbConnection 数据库连接，对应为java中数据库连接，可以调用其中同名方法 。</p>
+                      <p>(3)JS上下文提供$inputParam封装了输入参数。</p>
+                      <p>(4)可以通过脚本最后一个函数执行的返回值,为接口返回内容。</p>
+                      <p>完整例子:<pre>function example(){
+return $doDBUtil.queryList('select * from t_test');
+}
+example();
+                        </pre>
+                      </p>
+                  </div>
               </el-col>
               <!-- jar -->
               <el-col :span='12' v-if="logicType=='Jar'">
@@ -114,7 +129,7 @@
 
           <!-- 入参 -->
           <el-row>
-              <el-col :span='3'><label class="required">入参属性：</label></el-col>
+              <el-col :span='3'><label>入参属性：</label></el-col>
               <el-col :span='21'>
                   <p style="line-height:24px;">调用该方法需要填写的具体的入参属性， 样例如下:</p>
                   <el-table :data='inParam' v-if="inParam&&inParam.length>0">
@@ -161,7 +176,7 @@
 
           <!-- 出参 -->
           <el-row>
-              <el-col :span='3'><label class="required">出参属性：</label></el-col>
+              <el-col :span='3'><label>出参属性：</label></el-col>
               <el-col :span='21'>
                   <p style="line-height:24px;">调用该方法需要填写的具体的出参属性， 样例如下:</p>
                   <el-table v-if="outParam&&outParam.length>0" :data='outParam' class="table" :max-height='300'>
@@ -199,19 +214,20 @@
       <div class="test" v-if="isTest">
           <p class="Medium">API调试信息</p>
           <el-row>
-              <el-col :span='3'><label class="required">输入参数:</label></el-col>
+              <el-col :span='3'><label>输入参数:</label></el-col>
               <el-col :span='12'>
                   <el-input type='textarea' v-model="inParamJson" :rows='5'></el-input>
               </el-col>
           </el-row>
           <el-row>
-              <el-col :span='3'><label class="required">输出参数:</label></el-col>
+              <el-col :span='3'><label>输出参数:</label></el-col>
               <el-col :span='12'>
-                  <el-input type='textarea' v-model="outParamJson" :rows='5'></el-input>
+                  <el-input type='textarea' readonly v-model="outParamJson" :rows='5'></el-input>
               </el-col>
           </el-row>
+          <hr>
       </div>
-        <hr>
+        
       <div class="dialog-footer">
           
          <el-button v-if="!isTest" class="button-warn" @click="isTest=true">进入调试</el-button>
@@ -283,7 +299,8 @@ export default {
       outParamJson: "",
       inParamJson: "",
       isTest: false,
-      now:null
+      now: null,
+      isCreated: false //是否created结束
     };
   },
   computed: {
@@ -292,7 +309,7 @@ export default {
         return state.config.dataSourceList;
       },
       currentCataId: state => state.config.currentCataId,
-      currentApi: state => state.config.currentApi, 
+      currentApi: state => state.config.currentApi
     }),
     dataSource() {
       if (this.dataSourceList) {
@@ -307,19 +324,19 @@ export default {
         return arr;
       }
     },
-    mapDataType(){
-     return new Map([
+    mapDataType() {
+      return new Map([
         ["String", "string"],
         ["Number", 0],
         ["Boolean", false],
-        ["DateStr",this.now],
+        ["DateStr", this.now],
         ["NumberStr", "1234567890"],
         ["List<String>", ["string"]],
         ["List<Number>", [0]],
         ["List<Boolean>", [false]],
-        ["List<DateStr>",[this.now]],
+        ["List<DateStr>", [this.now]],
         ["List<NumberStr>", ["1234567890"]]
-      ])
+      ]);
     }
   },
   watch: {
@@ -331,9 +348,18 @@ export default {
             this.$set(obj, item.paramName, this.mapDataType.get(item.dataType));
           });
         }
-        this.inParamJson=JSON.stringify(obj)
+        this.inParamJson = JSON.stringify(obj);
       },
       deep: true
+    },
+    logicType() {
+      if (this.isCreated) {
+        this.inParam = [];
+        this.outParam = [];
+        this.inParamJson = "";
+        this.outParamJson = "";
+        this.sql = "";
+      }
     }
   },
   methods: {
@@ -383,23 +409,27 @@ export default {
       this.FOR_INOUT_PARAM({
         dataSourceWid: this.dSourceWid,
         sqlTemplate: this.sql
-      }).then(obj => {
-        if (obj && obj.inParams&&obj.inParams!=[]) {
-          this.inParam = obj.inParams;
-          this.inParam.forEach(item => {
-            if (item.need == "true") {
-              item.need = true;
-            } else {
-              item.need = false;
-            }
+      })
+        .then(obj => {
+          if (obj && obj.inParams && obj.inParams != []) {
+            this.inParam = obj.inParams;
+            this.inParam.forEach(item => {
+              if (item.need == "true") {
+                item.need = true;
+              } else {
+                item.need = false;
+              }
+            });
+          } else {
+            this.inParam = [];
+          }
+          this.outParam = obj && obj.outParams ? obj.outParams : [];
+        })
+        .catch(msg => {
+          this.$confirm(msg ? msg : "参数解析失败！", {
+            showCancelButton: false
           });
-        } else{
-          this.inParam = [];
-        }
-        this.outParam = (obj && obj.outParams) ? obj.outParams : [];
-      }).catch((msg)=>{
-        this.$confirm(msg?msg:'参数解析失败！', { showCancelButton: false });
-      });
+        });
     },
     test() {
       let obj = {
@@ -410,18 +440,16 @@ export default {
         inputParams: this.inParam,
         logicContent: this.sql,
         logicType: this.logicType,
-        outputParams: this.outParam,
-        // pageNum: this.paging ? this.pageNum : 1,
-        // pageSize: this.paging ? this.pageSize : this.max
+        outputParams: this.outParam
       };
-      obj.inParams.pageSize=this.paging ? (this.pageSize-0) : (this.max-0)
-      obj.inParams.pageNum = this.paging ? (this.pageNum-0) : 1
+      obj.inParams.pageSize = this.paging ? this.pageSize - 0 : this.max - 0;
+      obj.inParams.pageNum = this.paging ? this.pageNum - 0 : 1;
       this.TEST_API(obj)
         .then(str => {
-          this.outParamJson = JSON.stringify(str);
+          this.outParamJson = JSON.stringify(str, null, 2);
         })
         .catch(msg => {
-          this.outParamJson = JSON.stringify(msg);
+          this.outParamJson = JSON.stringify(msg, null, 2);
         });
     },
     validate() {
@@ -517,7 +545,7 @@ export default {
     },
     cancel() {
       this.isTest = false;
-      this.$router.push("/config");
+      this.$router.replace("/config");
     }
   },
   created() {
@@ -550,10 +578,11 @@ export default {
       }
       return fmt;
     };
-    this.now = new Date().format('yyyy-MM-dd hh:mm:ss')
+    this.now = new Date().format("yyyy-MM-dd hh:mm:ss");
     if (!this.dataSourceList) {
       this.FOR_DATASOURCE();
     }
+    this.isCreated = false;
     if (this.$route.query.edit) {
       this.isEdit = true;
       this.name = this.currentApi.intfName ? this.currentApi.intfName : "";
@@ -595,6 +624,10 @@ export default {
         this.$router.push("/config");
       });
     }
+    let _this = this
+    setTimeout(()=>{
+      _this.isCreated = true;
+    },500)
   }
 };
 </script>
@@ -617,10 +650,11 @@ export default {
       .remark {
         padding-left: 20px;
         big {
-          font-size: 16px;
+          font-size: 14px;
         }
         p {
           margin: 5px 0;
+          font-size: 13px;
         }
       }
     }

@@ -7,28 +7,28 @@
                 <el-button type='primary' style="float:right" @click="toEdit">编辑模式</el-button>
             </p>
             <el-row>
-                <el-col :span='3'><label class="apiDetail-title">名称：</label></el-col>
+                <el-col :span='3'><label class="apiDetail-titles">名称：</label></el-col>
                 <span class="desc">{{currentApi.intfName}}</span>
             </el-row>
 
             <el-row>
-                <el-col :span='3'><label class="apiDetail-title">接口地址：</label></el-col>
+                <el-col :span='3'><label class="apiDetail-titles">接口地址：</label></el-col>
                 <span class="desc">{{currentApi.intfUrl?currentApi.intfUrl:''}}</span>
             </el-row>
             <el-row>
-                <el-col :span='3'><label class="apiDetail-title">数据源：</label></el-col>
+                <el-col :span='3'><label class="apiDetail-titles">数据源：</label></el-col>
                 <span class="desc">{{mapDataSourceList.get(currentApi.resourceWid+'')}}</span>
             </el-row>   
             <el-row>
-                <el-col :span='3'><label class="apiDetail-title">逻辑类型：</label></el-col>
+                <el-col :span='3'><label class="apiDetail-titles">逻辑类型：</label></el-col>
                 <span class="desc">{{currentApi.intfLogicType}}</span>
             </el-row>
             <el-row>
-                <el-col :span='3'><label class="apiDetail-title">数据操作类型：</label></el-col>
+                <el-col :span='3'><label class="apiDetail-titles">数据操作类型：</label></el-col>
                 <span class="desc">{{currentApi.operateType=='Read'?'读取':'写入'}}</span>
             </el-row>
             <el-row>
-                <el-col :span='3'><label class="apiDetail-title">逻辑内容：</label></el-col>
+                <el-col :span='3'><label class="apiDetail-titles">逻辑内容：</label></el-col>
                 <el-col :span='21'><span class="desc">{{currentApi.intfLogicContent}}</span></el-col>
             </el-row>  
           </div>
@@ -37,7 +37,6 @@
               <p class="Medium">API基本信息</p>
               <el-row>
                   <p class="api-info-title"> 具体入参属性:</p>
-                  <!-- :data='JSON.parse(currentApi.intfInParams)' -->
                   <el-table  max-height='300' :data='JSON.parse(currentApi.intfInParams)' style="margin-top:19px;">
                       <el-table-column prop='paramName' label='参数名称'></el-table-column>
                       <el-table-column prop='paramDesc' label='参数描述'></el-table-column>                      
@@ -142,8 +141,8 @@ export default {
       vertical-align: middle;
     }
   }
-  .desc,.apiDetail-title{
-    line-height: 16px;
+  .desc,.apiDetail-titles{
+    line-height: 16px!important;
   }
   p + p {
     margin-top: 12px;
