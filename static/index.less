@@ -1,44 +1,38 @@
 @import './clear.css';
-@font-face {
-    font-family: Normal;
-    src: url('http://127.0.0.SourceHanSansCN-Normal.ttf')
-}
-
-@font-face {
-    font-family: Medium;
-    src: url('http://127.0.0.SourceHanSansCN-Medium.ttf')
-}
-
-.Medium {
-    font-family: Medium
-}
-
 body {
-    font-family: Normal;
+    font-family: 'Microsoft Yahei', 'Microsoft JhengHei';
     color: #4a4a4a;
     font-size: 14px;
+    min-width: 1280px;
 }
 
 .router-link-active {
     border-bottom: 2px solid #17d8c6;
     color: #17d8c6;
-    font-family: Medium;
+    font-family: 'Microsoft Yahei';
 }
 
 input::-moz-placeholder,
-{
-    font-family: Normal;
+    {
+    font-family: 'Microsoft Yahei';
     font-size: 13px;
 }
 
 input::-webkit-input-placeholder {
-    font-family: Normal;
+    font-family: 'Microsoft Yahei';
     font-size: 13px;
 }
 
 input:-ms-input-placeholder {
-    font-family: Normal;
+    font-family: 'Microsoft Yahei';
     font-size: 13px;
+}
+
+//x
+.el-input__inner::-ms-clear {
+    display: none;
+    width: 0;
+    height: 0;
 }
 
 input.el-input__inner,
@@ -46,6 +40,14 @@ input.el-input__inner,
     height: 36px;
     border-color: #9b9b9b;
     border-radius: 2px;
+}
+
+.el-tree {
+    overflow: auto;
+}
+
+.is-current>.el-tree-node__content>.tree-content {
+    background: #f0f7ff
 }
 
 .el-textarea__inner {
@@ -65,12 +67,16 @@ input.el-input__inner,
     vertical-align: top;
     padding: 0;
     border-radius: 2px;
-    font-family: Normal
+    font-family: 'Microsoft Yahei'
 }
 
 .el-message {
     background-color: #fff;
     padding: 30px 20px;
+}
+
+.el-tree-node.is-expanded>.el-tree-node__children {
+    display: inline;
 }
 
 .el-notification {
@@ -113,8 +119,8 @@ input.el-input__inner,
 div::-webkit-scrollbar,
 body::-webkit-scrollbar,
 textarea::-webkit-scrollbar {
-    width: 10px!important;
-    height: 10px!important;
+    width: 10px !important;
+    height: 10px !important;
 }
 
 div::-webkit-scrollbar-track,
@@ -126,8 +132,8 @@ textarea::-webkit-scrollbar-track {
 div::-webkit-scrollbar-thumb,
 body::-webkit-scrollbar-thumb,
 textarea::-webkit-scrollbar-thumb {
-    background: #ddd!important;
-    border-radius: 4px!important;
+    background: #ddd !important;
+    border-radius: 4px !important;
 }
 
 .required::before {
@@ -171,11 +177,23 @@ textarea::-webkit-scrollbar-thumb {
     color: #999;
     border-bottom: none;
     cursor: pointer;
-    
 }
 
 .popover-p {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+}
+
+.cus-input {
+    .el-input__inner {
+        border: none;
+        height: 30px;
+        background: #f6f6f6;
+        line-height: 30px;
+        padding-right:25px;
+    }
+    .el-input__prefix .el-input__icon {
+        line-height: 30px;
+    }
 }
