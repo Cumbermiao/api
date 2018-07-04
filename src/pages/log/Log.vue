@@ -213,7 +213,7 @@ export default {
     }
   }
   .log-main {
-    width: calc(~"100vw - 315px");
+    width: calc(~"100% - 315px");
     margin-left: 8px;
     padding: 20px;
   }

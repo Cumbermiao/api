@@ -7,7 +7,7 @@
       <el-row>
           <el-table :data='tableData' height='450' @filter-change='filterChange'>
               <el-table-column label='IP地址' prop='configValue'></el-table-column>
-              <el-table-column label='类型' prop='configType' filter-placement='bottom' column-key='type' min-width='40px'  :filters="typeList" :filter-multiple='false'>
+              <el-table-column label='类型' prop='configType' filter-placement='bottom' column-key='type'  :filters="typeList" :filter-multiple='false'>
                   <template slot-scope="scope">
                       <span>{{typeMap.get(scope.row.configType)}}</span>
                   </template>
@@ -16,9 +16,17 @@
                   <template slot-scope="scope">
                       <el-popover placement='top-start' width='300' trigger='hover' >
                           <span v-for="item in scope.row.configItem" :key="item.wid">{{item.name}}; </span>
-                          <p slot="reference" class="popover-p">
+                          <span slot="reference" class="popover-p">
                               <span v-for="item in scope.row.configItem" :key="item.wid">{{item.name}}; </span>
-                          </p>
+                          </span>
+                      </el-popover>
+                  </template>
+              </el-table-column>
+              <el-table-column label='描述' prop='description'>
+                  <template slot-scope="scope">
+                    <el-popover placement='top-start' width='300' trigger='hover' >
+                          <span>{{scope.row.description}}; </span>
+                          <span slot="reference" class="ellipsis">{{scope.row.description}}</span>
                       </el-popover>
                   </template>
               </el-table-column>
@@ -62,6 +70,12 @@
                   <el-input style="width:418px;" type="text" v-model.trim="ip"  placeholder='请输入IP'></el-input>
               </el-col>
           </el-row>
+          <el-row>
+              <el-col :span='4'><label class="required">描述：</label></el-col>
+              <el-col :span='20'>
+                  <el-input style="width:418px;" type="text" v-model.trim="desc"  placeholder='请输入描述'></el-input>
+              </el-col>
+          </el-row>
           <div class="dialog-footer">
               <el-button type='text' @click="cancel">取消</el-button>
               <el-button type='primary' @click="certain">确定</el-button>
@@ -98,6 +112,7 @@ export default {
       ctrMap: null,
       currentIP: null,
       ip: "",
+      desc: "",
       filterType: "" //表格类型过滤的值
     };
   },
@@ -146,6 +161,7 @@ export default {
       this.type = "AllApi";
       this.ctrObj = [];
       this.ip = "";
+      this.desc = "";
     },
     toEdit(obj) {
       this.currentIP = obj;
@@ -156,37 +172,41 @@ export default {
         this.ctrObj.push(item.wid - 0);
       });
       this.ip = obj.configValue;
+      this.desc = obj.description ? obj.description : "";
       this.isEdit = true;
       this.ipDialog = true;
     },
     //删除白名单
     remove(obj) {
-      this.REMOVE_WHITE_IP([obj.wid])
-        .then(() => {
-          this.searchIP();
-          this.$notify({
-            iconClass: "gIcon iconfont icon-success bIcon",
-            type: "success",
-            title: "删除成功!"
+      this.$confirm("", "确认删除吗？").then(() => {
+        this.REMOVE_WHITE_IP([obj.wid])
+          .then(() => {
+            this.searchIP();
+            this.$notify({
+              iconClass: "gIcon iconfont icon-success bIcon",
+              type: "success",
+              title: "删除成功!"
+            });
+          })
+          .catch(msg => {
+            this.$notify({
+              iconClass: "gIcon el-icon-warning bIcon",
+              type: "warning",
+              title: "删除失败!"
+            });
           });
-        })
-        .catch(msg => {
-          this.$notify({
-            iconClass: "gIcon el-icon-warning bIcon",
-            type: "warning",
-            title: "删除失败!"
-          });
-        });
+      }).catch(()=>{});
     },
     cancel() {
       this.closeDialog();
     },
     certain() {
-      if (!this.type || !this.ctrObj || !this.ip) {
-        this.message({
+      if (!this.type || !this.ctrObj || !this.ip.length || !this.desc.length) {
+        this.$message({
           type: "warning",
           message: "请填写必填项！"
         });
+        return;
       }
       let param = [];
       let configItem = [];
@@ -201,6 +221,7 @@ export default {
         configType: this.type,
         configValue: this.ip,
         configItem: JSON.stringify(configItem),
+        description: this.desc,
         wid: this.isEdit ? this.currentIP.wid : ""
       };
       let successText = !this.isEdit ? "新增成功!" : "修改成功!";
@@ -256,6 +277,7 @@ export default {
       this.ipDialog = false;
       this.isEdit = false;
       this.currentIP = null;
+      this.ip = this.desc = "";
     }
   },
   created() {

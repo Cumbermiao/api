@@ -49,8 +49,9 @@
               </el-table-column>
               <el-table-column label='注册状态' >
                 <template slot-scope="scope">
-                    <div v-if="scope.row.status=='Registered'">已注册
-                      <p style="color:#04A9F5;text-decoration:underline;cursor:pointer;" @click="unRegister(scope.row.wid)">去注销</p>
+                    <div v-if="scope.row.status=='Registered'">
+                      <span style="color:#5ed7bc">已注册</span>
+                      <p style="color:red;text-decoration:underline;cursor:pointer;" @click="unRegister(scope.row.wid)">去注销</p>
                     </div>
                     <div v-else>未注册
                       <p><span style="color:#04A9F5;text-decoration:underline;cursor:pointer;" @click="register(scope.row.wid)">去注册</span></p>
@@ -744,7 +745,7 @@ export default {
   overflow: auto;
 }
 #config section:nth-child(2) {
-  width: calc(100vw - 315px);
+  width: calc(100% - 315px);
   margin-left: 8px;
   padding: 20px;
 }

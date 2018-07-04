@@ -1,0 +1,9 @@
+CACHE MANIFEST
+#2017-6-22 v1.0.0
+#上边的标题必需位于第一行，在此标题下列出的文件将在首次下载后进行缓存
+#代表注释行
+#下边列出的都是要缓存的文件
+/index.html
+/dist/build.js
+
+/static/index.less

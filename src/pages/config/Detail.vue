@@ -132,7 +132,7 @@ example();
               <el-col :span='3'><label>入参属性：</label></el-col>
               <el-col :span='21'>
                   <p style="line-height:24px;">调用该方法需要填写的具体的入参属性， 样例如下:</p>
-                  <el-table :data='inParam' v-if="inParam&&inParam.length>0">
+                  <el-table :data='inParam' id="inTable" v-if="inParam&&inParam.length>0" :max-height='300' :render-header="renderInParam">
                       <el-table-column prop='paramName' label='参数名称'>
                           <template slot-scope="scope">
                               <el-input v-model="scope.row.paramName" class="table-input"></el-input>
@@ -160,10 +160,10 @@ example();
                               <el-input v-model="scope.row.regex" class="table-input"></el-input>
                           </template>
                       </el-table-column>
-                      <el-table-column :width='80' align='left'>
+                      <el-table-column label="操作" :width='80' align='left' :render-header="renderInParam">
                           <template slot-scope="scope">
                               <div class="table-icon">
-                                <img :src="add" alt="新增" @click="addParam(scope.row)">
+                                <!-- <img :src="add" alt="新增" @click="addParam(scope.row)"> -->
                                 <img :src="remove" alt="删除" style="margin-left:20px" @click="removeParam(scope.row)">
                               </div>
                           </template>
@@ -179,7 +179,7 @@ example();
               <el-col :span='3'><label>出参属性：</label></el-col>
               <el-col :span='21'>
                   <p style="line-height:24px;">调用该方法需要填写的具体的出参属性， 样例如下:</p>
-                  <el-table v-if="outParam&&outParam.length>0" :data='outParam' class="table" :max-height='300'>
+                  <el-table ref="outTable"  id="outTable"  v-if="outParam&&outParam.length>0" :data='outParam' class="table" :max-height='300'>
                       <el-table-column prop='paramName' label='参数名称'>
                           <template slot-scope="scope">
                               <el-input v-model="scope.row.paramName" class="table-input"></el-input>
@@ -197,10 +197,10 @@ example();
                             </el-select>
                           </template>
                       </el-table-column>
-                      <el-table-column  :width='80' align='left'>
+                      <el-table-column  :width='80' align='left' :render-header="renderOutParam">
                           <template slot-scope="scope">
                               <div class="table-icon">
-                                <img :src="add" alt="新增" @click="addOutParam(scope.row)">
+                                <!-- <img :src="add" alt="新增" @click="addOutParam(scope.row)"> -->
                                 <img :src="remove" alt="删除" style="margin-left:20px" @click="removeOutParam(scope.row)">
                               </div>
                           </template>
@@ -278,6 +278,7 @@ export default {
       ],
       //
       sql: "", //sql
+      oldSql: "", //记录logicType改变时，存储之前的sql,js不存储
       //入参
       inParam: [
         {
@@ -352,13 +353,19 @@ export default {
       },
       deep: true
     },
-    logicType() {
+    logicType(newV, oldV) {
       if (this.isCreated) {
         this.inParam = [];
         this.outParam = [];
         this.inParamJson = "";
         this.outParamJson = "";
-        this.sql = "";
+        if (newV == "JavaScript") {
+          this.oldSql = this.sql;
+          this.sql = "";
+        }
+        if (newV == "SQL") {
+          this.sql = this.oldSql;
+        }
       }
     }
   },
@@ -370,6 +377,34 @@ export default {
       "UPDATE_API",
       "TEST_API"
     ]),
+    renderInParam(h, { column, $index }) {
+      return h("div", { style: { lineHeight: "20px", padding: 0 } }, [
+        "操作",
+        h("img", {
+          style: {
+            paddingLeft: "4px",
+            verticalAlign: "middle",
+            cursor: "pointer"
+          },
+          attrs: { src: this.add },
+          on: { click: this.addParam }
+        })
+      ]);
+    },
+    renderOutParam(h, { column, $index }) {
+      return h("div", { style: { lineHeight: "20px", padding: 0 } }, [
+        "操作",
+        h("img", {
+          style: {
+            paddingLeft: "4px",
+            verticalAlign: "middle",
+            cursor: "pointer"
+          },
+          attrs: { src: this.add },
+          on: { click: this.addOutParam }
+        })
+      ]);
+    },
     beforeRemove(file, fileList) {
       return this.$confirm(`确定移除 ${file.name}？`);
     },
@@ -380,6 +415,13 @@ export default {
         dataType: "String",
         need: true,
         regex: ""
+      });
+      var body = document.querySelector("#inTable .el-table__body-wrapper");
+      let content = document.querySelector("#inTable .el-table__body");
+      this.$nextTick(() => {
+        if (content.scrollHeight > 258) {
+          body.scrollTop = content.scrollHeight - 258;
+        }
       });
     },
     removeParam(obj) {
@@ -395,6 +437,13 @@ export default {
         paramName: "参数名称",
         paramDesc: "参数描述",
         dataType: "String"
+      });
+      var body = document.querySelector("#outTable .el-table__body-wrapper");
+      let content = document.querySelector("#outTable .el-table__body");
+      this.$nextTick(() => {
+        if (content.scrollHeight > 258) {
+          body.scrollTop = content.scrollHeight - 258;
+        }
       });
     },
     removeOutParam(obj) {
@@ -620,14 +669,34 @@ export default {
       this.$confirm("", {
         title,
         showCancelButton: false
-      }).then(() => {
-        this.$router.push("/config");
-      });
+      })
+        .then(() => {
+          this.$router.push("/config");
+        })
+        .catch(() => {});
     }
-    let _this = this
-    setTimeout(()=>{
+    let _this = this;
+    setTimeout(() => {
       _this.isCreated = true;
-    },500)
+    }, 500);
+
+    // this.$nextTick(() => {
+    //   var outTable = document.getElementById("outTable");
+    //   // console.dir(outTable);
+    //   var body = document.querySelector("#outTable .el-table__body-wrapper");
+    //   let content =  document.querySelector("#outTable .el-table__body");
+    //   console.dir(body);
+
+    //   body.addEventListener("scroll", () => {
+    //     console.dir(body,666);
+    //     // this.$refs.outTable
+    //     console.dir(content)
+
+    //   });
+    //   body.onscroll=function(){
+    //     console.log('sss')
+    //   }
+    // });
   }
 };
 </script>

@@ -1,27 +1,39 @@
 <template>
   <div id="gateWay">
     <el-row>
-        <el-col :span='3'><label class="required">API网关地址：</label></el-col>
+        <el-col :span='3'><label class="required">ESOP管理控制台地址：</label></el-col>
         <el-col :span='21'>
-            <el-input style="width:418px;" type="text" v-model.trim="ApiRegisterUrls.value"  placeholder='API注册地址'></el-input>
+            <el-input style="width:418px;" type="text" v-model.trim="ApiRegisterUrls.value"  placeholder='ESOP管理控制台地址'></el-input>
+            <span class="desc">
+              ESOP管理控制台的根地址，形如：http://ip:port/esop_manager_name
+            </span>
         </el-col>
     </el-row>
     <el-row>
-        <el-col :span='3'><label class="required">API服务名称：</label></el-col>
+        <el-col :span='3'><label class="required">服务名称：</label></el-col>
         <el-col :span='21'>
             <el-input style="width:418px;" type="text" v-model.trim="AppName.value"  placeholder='API服务名称'></el-input>
+            <span class="desc">
+             在ESOP中显示的服务名称，例如：主数据API即为主数据。
+            </span>
         </el-col>
     </el-row>
     <el-row>
-        <el-col :span='3'><label class="required">API服务编码：</label></el-col>
+        <el-col :span='3'><label class="required">服务编码：</label></el-col>
         <el-col :span='21'>
             <el-input style="width:418px;" type="text" v-model.trim="AppCode.value"  placeholder='API服务编码'></el-input>
+            <span class="desc">
+              在ESOP中的服务编码，例如：主数据为ZSJ
+            </span>
         </el-col>
     </el-row>
     <el-row>
-        <el-col :span='3'><label class="required">API服务地址：</label></el-col>
+        <el-col :span='3'><label class="required">服务地址：</label></el-col>
         <el-col :span='21'>
-            <el-input style="width:418px;" type="text" v-model.trim="ServiceUrls.value"  placeholder='API服务地址'></el-input>
+            <el-input style="width:418px;" type="text" v-model.trim="ServiceUrls.value"  placeholder='API服务地址，多个地址以逗号隔开'></el-input>
+            <span class="desc">
+              主数据API的服务地址，即API所在服务的根地址，形如：http://ip:port/server_name
+            </span>
         </el-col>
     </el-row>
     <div class="dialog-footer">
@@ -59,7 +71,7 @@ export default {
         configWid: ""
       },
       timer: null,
-      isDisabled:false
+      isDisabled: false
     };
   },
   methods: {
@@ -137,11 +149,11 @@ export default {
             duration: 2000
           });
         });
-        this.isDisabled=true
-        this.timer = setTimeout(()=>{
-          this.isDisabled = false
-          clearTimeout(this.timer)
-        },2000)
+      this.isDisabled = true;
+      this.timer = setTimeout(() => {
+        this.isDisabled = false;
+        clearTimeout(this.timer);
+      }, 2000);
     },
     validate() {
       let text = "";
@@ -175,6 +187,10 @@ export default {
   }
   .dialog-footer {
     text-align: left;
+  }
+  .desc{
+    font-size: 13px;
+    color:#bbb;
   }
 }
 </style>

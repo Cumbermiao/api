@@ -35,7 +35,7 @@ module.exports = {
         loader: "style-loader!css-loader!less-loader",
       },
       {
-        test: /\.(png|jpg|gif|svg|ttf|woff)$/,
+        test: /\.(png|jpg|gif|svg|ttf|woff|eot|otf)$/,
         loader: 'url-loader',
         options: {
           name: '[name].[ext]?[hash]'
@@ -55,10 +55,12 @@ module.exports = {
     noInfo: false,
     overlay: true,
     hot:true,
-    proxy:{
-      '/main-data':{
-        target:'http://172.16.61.89:8099',
-        pathRewrite:{"^/main-data":"http://172.16.61.89:8099"},
+    proxy: {
+      "/do": {
+        // target: "http://172.20.6.183:9090",
+        target: "http://172.20.6.183:9090",
+        // pathRewrite: {"^/do" : "http://172.20.6.183:9090/do"},
+        pathRewrite: {"^/do" : "http://172.20.6.183:9090/do"},
         changeOrigin:true,
         secure:false
       }
